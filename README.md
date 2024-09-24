@@ -26,4 +26,4 @@ To set up and run AskThisWebsite2 on your local machine, follow these steps:
 1. **Clone the Repository**:
 
    ```bash
-   git clone https://github.com/yourusername/askthiswebsite2.git
+   git clone https://github.com/sami999khan999/chat_url
