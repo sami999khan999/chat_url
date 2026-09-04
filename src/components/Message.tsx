@@ -2,9 +2,18 @@ import { cn } from "@/lib/utils";
 import { Bot, User } from "lucide-react";
 
 interface MessageProps {
-  content: string;
+  content: unknown;
   isUserMessage: boolean;
 }
+
+// History coming back from Redis is not guaranteed to be a plain string, and
+// rendering a non-string child throws inside React.
+const toText = (content: unknown): string => {
+  if (typeof content === "string") return content;
+  if (content === null || content === undefined) return "";
+  if (Array.isArray(content)) return content.map(toText).join("");
+  return typeof content === "object" ? JSON.stringify(content) : String(content);
+};
 
 export const Message = ({ content, isUserMessage }: MessageProps) => {
   return (
@@ -38,8 +47,8 @@ export const Message = ({ content, isUserMessage }: MessageProps) => {
               </span>
             </div>
 
-            <p className="text-sm font-normal py-2.5 text-gray-900 dark:text-white">
-              {content}
+            <p className="text-sm font-normal py-2.5 whitespace-pre-wrap text-gray-900 dark:text-white">
+              {toText(content)}
             </p>
           </div>
         </div>

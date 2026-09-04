@@ -6,27 +6,35 @@ import { type useChat } from "ai/react";
 
 type HandleInputChange = ReturnType<typeof useChat>["handleInputChange"];
 type HandleSubmit = ReturnType<typeof useChat>["handleSubmit"];
-type SetInput = ReturnType<typeof useChat>["setInput"];
 
 interface ChatInputProps {
   input: string;
   handleInputChange: HandleInputChange;
   handleSubmit: HandleSubmit;
-  setInput: SetInput;
+  isLoading?: boolean;
 }
 
 export const ChatInput = ({
   handleInputChange,
   handleSubmit,
   input,
-  setInput,
+  isLoading = false,
 }: ChatInputProps) => {
+  const canSubmit = !isLoading && input.trim().length > 0;
+
   return (
     <div className="z-10 bg-zinc-900 absolute bottom-0 left-0 w-full">
       <div className="mx-2 flex flex-row gap-3 md:mx-4 md:last:mb-6 lg:mx-auto lg:max-w-2xl xl:max-w-3xl">
         <div className="relative flex h-full flex-1 items-stretch md:flex-col">
           <div className="relative flex flex-col w-full flex-grow p-4">
-            <form onSubmit={handleSubmit} className="relative">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (!canSubmit) return;
+                handleSubmit(e);
+              }}
+              className="relative"
+            >
               <Textarea
                 minRows={4}
                 autoFocus
@@ -35,8 +43,10 @@ export const ChatInput = ({
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && !e.shiftKey) {
                     e.preventDefault();
-                    handleSubmit();
-                    setInput("");
+                    if (!canSubmit) return;
+                    // Go through the form so the submit path stays identical
+                    // whether the user presses Enter or clicks the button.
+                    e.currentTarget.form?.requestSubmit();
                   }
                 }}
                 placeholder="Enter your question..."
@@ -46,6 +56,8 @@ export const ChatInput = ({
               <Button
                 size="sm"
                 type="submit"
+                isDisabled={!canSubmit}
+                isLoading={isLoading}
                 className="absolute z-10 border border-border bg-zinc-900 right-2 bottom-2"
               >
                 <Send className="size-4" />
